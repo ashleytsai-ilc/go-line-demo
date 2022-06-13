@@ -5,11 +5,13 @@ import (
 	"go-line-demo/config"
 	"go-line-demo/database"
 	"go-line-demo/routes"
+	"go-line-demo/validators"
 )
 
 func main() {
 	config.Init()
 	database.Init()
+	validators.RegisterValidation()
 	router := routes.SetupRouter()
 	config := config.GetConfig()
 
