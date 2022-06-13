@@ -1,13 +1,18 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+	"go-line-demo/config"
+	"go-line-demo/database"
+	"go-line-demo/routes"
+)
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run(":3000") // listen and serve on 0.0.0.0:8080
+	config.Init()
+	database.Init()
+	router := routes.SetupRouter()
+	config := config.GetConfig()
+
+	router.Run(fmt.Sprintf(":%v", config.GetString("PORT")))
+	defer database.Close()
 }

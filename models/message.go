@@ -48,3 +48,15 @@ type LineEvent struct {
 	Message     linebot.Message
 	MessageType linebot.MessageType
 }
+
+func NewLineEvent(lineEvent *linebot.Event) *LineEvent {
+	return &LineEvent{
+		UserId:    lineEvent.Source.UserID,
+		Timestamp: lineEvent.Timestamp,
+		Message:   lineEvent.Message,
+	}
+}
+
+func (e *LineEvent) SetType(msgtype linebot.MessageType) {
+	e.MessageType = msgtype
+}
