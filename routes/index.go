@@ -15,5 +15,8 @@ func SetupRouter() *gin.Engine {
 	// message routes
 	router = SetMessageRoutes(router)
 
+	// Get message list of user
+	router.GET("/user/:userid/messages", controllers.GetMessages)
+
 	return router
 }

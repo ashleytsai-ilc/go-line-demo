@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetHi(request *gin.Context) {
@@ -70,5 +71,43 @@ func PushMessage(request *gin.Context) {
 		}
 
 		request.IndentedJSON(http.StatusOK, gin.H{"message": "Push message successfully."})
+	}
+}
+
+func GetMessages(request *gin.Context) {
+	var getMsg validators.GetMessages
+
+	if err := request.ShouldBindUri(&getMsg); err != nil {
+		request.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {
+		var results = []*models.Event{}
+		collection := database.GetClient().Database("chat").Collection("messages")
+		cursor, err := collection.Find(context.TODO(), bson.D{{"userid", getMsg.UserID}})
+		if err != nil {
+			panic(err)
+		}
+		for cursor.Next(context.TODO()) {
+			var commonEvent models.CommonEvent
+			if err := cursor.Decode(&commonEvent); err != nil {
+				panic(err)
+			}
+
+			newEvent := models.NewEvent(commonEvent)
+			msgType := commonEvent.MessageType
+			var message models.Message
+			switch msgType {
+			case linebot.MessageTypeText:
+				message = &models.TextMessage{Type: msgType}
+			case linebot.MessageTypeImage:
+				message = &models.ImageMessage{Type: msgType}
+			}
+			message.Marshal(commonEvent.Message)
+			newEvent.Message = message
+			results = append(results, newEvent)
+		}
+		if err := cursor.Err(); err != nil {
+			panic(err)
+		}
+		request.IndentedJSON(http.StatusOK, results)
 	}
 }
