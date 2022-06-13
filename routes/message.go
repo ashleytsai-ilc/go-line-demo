@@ -11,6 +11,8 @@ func SetMessageRoutes(router *gin.Engine) *gin.Engine {
 	{
 		// Receive messages
 		message.POST("/receive", controllers.ReceiveMessage)
+		// Send message
+		message.POST("/push", controllers.PushMessage)
 	}
 	return router
 }
